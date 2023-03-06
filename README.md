@@ -2,17 +2,15 @@
 
 ```
 [Service]
-PORT=3081
+PORT=3082
 
-[Mongo]
-MONGODB_HOST=mongodb-user-service.mongodb.svc.cluster.local
-MONGODB_PORT=27081
-MONGODB_DB=User
+[DB]
+MONGODB_URI="mongodb://final:test123@192.168.50.109:27099/tripdiary"
 
 [Redis]
-REDIS_HOST=redis-community-service.redis.svc.cluster.local
-REDIS_PORT=6379
-REDIS_PASSWORD=redis_pw
+REDIS_HOST=192.168.50.108
+REDIS_PORT=6399
+REDIS_PASSWORD=test123
 
 [UserAuth]
 JWT_SECRET=jwt_secret_test

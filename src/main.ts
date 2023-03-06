@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 
 class MicroApplication {
   static instance: MicroApplication;
-  private logger = new Logger('TripDiary - User');
+  private logger = new Logger('TripDiary - FileServer');
   private DEV_MODE: boolean;
   private PORT: string;
   private corsOriginList: string[];

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { FilesMicroServiceDto } from '../data/dto/file-ms.dto';
 import { FileServerService } from '../service/file-server.service';
@@ -10,11 +10,18 @@ export class FileServerController {
 
   @MessagePattern({ cmd: 'read_file' })
   getFileInfo(@Payload() data: FilesMicroServiceDto) {
-    return this.fileService.getFileInfo(`${data.fileid}`);
+    return this.fileService.getFileInfo(`${data.id}`);
   }
 
+  //async uploadFile(user: Users, files: Array<Express.Multer.File>)
   @MessagePattern({ cmd: 'create_file' })
-  uploadFile(@Payload() data: FilesMicroServiceDto) {
-    return this.fileService.uploadFile(data);
+  // @UseInterceptors(FilesInterceptor('files', 10, multerOptions('boards')))
+  uploadFile(
+    @Payload('userid') userid: string,
+    @Payload('files') files: Express.Multer.File[],
+  ) {
+    console.log('Files:', files);
+    console.log('userid:', userid);
+    return this.fileService.uploadFile(userid, files);
   }
 }

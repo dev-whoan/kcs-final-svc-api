@@ -1,13 +1,22 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/interceptor/logger/logger.middleware';
-import { FileServerModule } from './file-server/file-server.module';
+import { FileServerModule } from './files/file-server.module';
 import { HealthCheckModule } from './health-check/health-check.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), FileServerModule, HealthCheckModule],
+  imports: [
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }),
+    FileServerModule,
+    HealthCheckModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

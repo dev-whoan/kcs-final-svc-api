@@ -1,11 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import { RedisManagerService } from 'src/redis-manager/redis-manager.service';
-import { FilesMicroServiceDto } from '../data/dto/file-ms.dto';
+import { FilesMicroServiceDto } from './dto/file-ms.dto';
+import { FilesCreateDto } from './dto/file.create.dto';
+import { Files } from './file.schema';
 
 @Injectable()
-export class FileServerService {
+export class FilesRepository {
   private readonly redisPrefixKey = 'file';
-  constructor(private readonly redisService: RedisManagerService) {}
+
+  constructor(
+    @InjectModel(Files.name)
+    private readonly fileModel: Model<Files>,
+    private readonly redisService: RedisManagerService,
+  ) {}
 
   async getFileInfo(fileid: string) {
     //* First find on Redis
@@ -24,20 +33,8 @@ export class FileServerService {
     };
   }
 
-  async uploadFile(fileInfo: FilesMicroServiceDto) {
+  async createFile(fileInfo) {
     //* Just Add it on DB
-    console.log('UploadFile');
-    const key = `${this.redisPrefixKey}/${fileInfo.fileid}`;
-    const result = await this.redisService.setCache(key, fileInfo);
-    if (!!result) {
-      return {
-        success: true,
-        result,
-      };
-    }
-    //* hey
-    return {
-      success: false,
-    };
+    return await this.fileModel.create(fileInfo);
   }
 }
