@@ -1,13 +1,13 @@
 import { PickType } from '@nestjs/swagger';
-import { Files } from '../file.schema';
+import { FileInfo } from '../file-info.schema';
 
-export class FilesCreateDto extends PickType(Files, [
+export class FileInfoCreateDto extends PickType(FileInfo, [
   'owner',
   'fileName',
   'originalName',
   'filePath',
 ] as const) {
-  constructor(partial: Partial<FilesCreateDto>) {
+  constructor(partial: Partial<FileInfoCreateDto>) {
     super();
     Object.assign(this, partial);
   }

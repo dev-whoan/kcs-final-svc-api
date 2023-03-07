@@ -1,53 +1,43 @@
+import { FileInfoMicroServiceDto } from './dto/file-info.ms.dto';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { MicroserviceDataWrapper } from 'src/common/data/microservice-data-wrapper';
+import { MicroserviceDataWrapper } from '../../common/data/microservice-data-wrapper';
 import { RedisManagerService } from '../../redis-manager/redis-manager.service';
-import { FilesMicroServiceDto } from './dto/file-ms.dto';
-import { Files } from './file.schema';
+import { FileInfo } from './file-info.schema';
 
 @Injectable()
-export class FilesRepository {
+export class FileInfoRepository {
   private readonly redisPrefixKey = 'file';
 
   constructor(
-    @InjectModel(Files.name)
-    private readonly fileModel: Model<Files>,
+    @InjectModel(FileInfo.name)
+    private readonly fileModel: Model<FileInfo>,
     private readonly redisService: RedisManagerService,
   ) {}
 
-  async getFileInfo(fileid: string): Promise<MicroserviceDataWrapper> {
+  async findById(id: string): Promise<FileInfo | null> {
     //* First find on Redis
     //* If not exist on REdis, find on DB, and add it to Redis, and return it
-    const key = `${this.redisPrefixKey}/${fileid}`;
+    const key = `${this.redisPrefixKey}/${id}`;
     const redisResult = await this.redisService.getCache(key);
+
     if (!!redisResult) {
-      return {
-        success: true,
-        code: HttpStatus.OK,
-        result: redisResult,
-      };
+      return redisResult;
     }
 
-    const dbResult = (await this.fileModel.findOne({
-      _id: fileid,
-    })) as FilesMicroServiceDto;
+    const dbResult = await this.fileModel.findById({
+      id,
+    });
 
     if (!!dbResult) {
-      return {
-        success: true,
-        code: HttpStatus.OK,
-        result: dbResult,
-      };
+      return dbResult;
     }
 
-    return {
-      success: true,
-      code: HttpStatus.NO_CONTENT,
-    };
+    return null;
   }
 
-  async createFile(fileInfo) {
+  async storeFileInfoInDatabase(fileInfo): Promise<FileInfo> {
     //* Just Add it on DB
     return await this.fileModel.create(fileInfo);
   }
