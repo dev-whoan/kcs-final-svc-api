@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { FilesMicroServiceDto } from '../data/dto/file-ms.dto';
 import { FileServerService } from '../service/file-server.service';
@@ -7,6 +7,11 @@ import { FileServerService } from '../service/file-server.service';
 export class FileServerController {
   private readonly redisPrefixKey = 'file';
   constructor(private readonly fileService: FileServerService) {}
+
+  @Get()
+  getFileInfoHttp() {
+    return this.fileService.getFileInfo('6405a8ef83fed38c5f2ad9b8');
+  }
 
   @MessagePattern({ cmd: 'read_file' })
   getFileInfo(@Payload() data: FilesMicroServiceDto) {

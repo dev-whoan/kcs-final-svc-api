@@ -1,6 +1,6 @@
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { FilesMicroServiceDto } from 'src/files/data/dto/file-ms.dto';
+import { FilesMicroServiceDto } from '../files/data/dto/file-ms.dto';
 
 @Injectable()
 export class RedisManagerService {

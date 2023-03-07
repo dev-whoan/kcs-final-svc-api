@@ -1,0 +1,59 @@
+import { CACHE_MANAGER } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { getModelToken, MongooseModule } from '@nestjs/mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
+import { RedisManagerService } from '../../redis-manager/redis-manager.service';
+import { RedisManagerModule } from '../../redis-manager/redis-manager.module';
+import { FilesRepository } from '../data/file.repository';
+import { Files, FilesSchema } from '../data/file.schema';
+import { FileServerService } from './file-server.service';
+
+const mockCacheManager = {
+  set: jest.fn(),
+  get: jest.fn(),
+  del: jest.fn(),
+  reset: jest.fn(),
+};
+
+describe('FileServerService', () => {
+  let service: FileServerService;
+  let fileRepository: FilesRepository;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        MongooseModule.forRoot(process.env.MONGODB_URI, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        }),
+        MongooseModule.forFeature([{ name: Files.name, schema: FilesSchema }]),
+        ConfigModule.forRoot(),
+        RedisManagerModule,
+      ],
+      providers: [
+        FileServerService,
+        RedisManagerService,
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
+        },
+        FilesRepository,
+        {
+          provide: getModelToken(Files.name),
+          useFactory: () => {},
+        },
+      ],
+    }).compile();
+
+    service = module.get<FileServerService>(FileServerService);
+    fileRepository = module.get<FilesRepository>(FilesRepository);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  it('get file info should return 200', () => {
+    expect(service.getFileInfo('6405a8ef83fed38c5f2ad9b8')).toBe('ok');
+  });
+});

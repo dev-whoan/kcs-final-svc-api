@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { RedisManagerService } from 'src/redis-manager/redis-manager.service';
+import { MicroserviceDataWrapper } from 'src/common/data/microservice-data-wrapper';
+import { RedisManagerService } from '../../redis-manager/redis-manager.service';
 import { FilesMicroServiceDto } from './dto/file-ms.dto';
-import { FilesCreateDto } from './dto/file.create.dto';
 import { Files } from './file.schema';
 
 @Injectable()
@@ -16,20 +16,34 @@ export class FilesRepository {
     private readonly redisService: RedisManagerService,
   ) {}
 
-  async getFileInfo(fileid: string) {
+  async getFileInfo(fileid: string): Promise<MicroserviceDataWrapper> {
     //* First find on Redis
     //* If not exist on REdis, find on DB, and add it to Redis, and return it
     const key = `${this.redisPrefixKey}/${fileid}`;
-    const result = await this.redisService.getCache(key);
-    if (!!result) {
+    const redisResult = await this.redisService.getCache(key);
+    if (!!redisResult) {
       return {
         success: true,
-        result,
+        code: HttpStatus.OK,
+        result: redisResult,
+      };
+    }
+
+    const dbResult = (await this.fileModel.findOne({
+      _id: fileid,
+    })) as FilesMicroServiceDto;
+
+    if (!!dbResult) {
+      return {
+        success: true,
+        code: HttpStatus.OK,
+        result: dbResult,
       };
     }
 
     return {
-      success: false,
+      success: true,
+      code: HttpStatus.NO_CONTENT,
     };
   }
 

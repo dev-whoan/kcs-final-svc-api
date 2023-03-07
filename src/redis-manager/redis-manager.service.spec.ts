@@ -2,9 +2,10 @@ import { CacheModule, CACHE_MANAGER } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisManagerService } from './redis-manager.service';
-import * as redisStore from 'cache-manager-redis-store';
+import * as redisStore from 'cache-manager-ioredis';
 import { RedisManagerModule } from './redis-manager.module';
 import { Cache } from 'cache-manager';
+import { FilesMicroServiceDto } from '../files/data/dto/file-ms.dto';
 
 const mockCacheManager = {
   set: jest.fn(),
@@ -12,6 +13,12 @@ const mockCacheManager = {
   del: jest.fn(),
   reset: jest.fn(),
 };
+
+const mockDto = new FilesMicroServiceDto({
+  owner: 'test-owner',
+  filePath: 'test-filepath',
+  fileName: 'test-filename',
+});
 
 describe('RedisManagerService', () => {
   let redisService: RedisManagerService;
@@ -48,12 +55,11 @@ describe('RedisManagerService', () => {
 
     it('should return Ok', async () => {
       const spy = jest.spyOn(cache, 'set');
-
-      await redisService.setCache('test', { key: 'test' });
+      await redisService.setCache('test', mockDto);
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy.mock.calls[0][0]).toEqual('test');
-      expect(spy.mock.calls[0][1]).toEqual({ key: 'test' });
+      expect(spy.mock.calls[0][1]).toEqual(mockDto);
     });
   });
 
@@ -63,13 +69,11 @@ describe('RedisManagerService', () => {
     });
 
     it('should return test', async () => {
-      const spy = jest
-        .spyOn(cache, 'get')
-        .mockResolvedValueOnce({ key: 'test' });
+      const spy = jest.spyOn(cache, 'get').mockResolvedValueOnce(mockDto);
 
       const res = await redisService.getCache('test');
       expect(spy).toHaveBeenCalledTimes(1);
-      expect(res).toEqual({ key: 'test' });
+      expect(res).toEqual(mockDto);
     });
   });
   describe('del', () => {

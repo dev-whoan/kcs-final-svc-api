@@ -1,36 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import multer from 'multer';
-import { saveFile } from 'src/common/utils/file.manager';
-import { multerOptions } from 'src/common/utils/multer.options';
-import { RedisManagerService } from 'src/redis-manager/redis-manager.service';
-import { FilesMicroServiceDto } from '../data/dto/file-ms.dto';
+import { saveFile } from '../../common/utils/file.manager';
+import { multerOptions } from '../../common/utils/multer.options';
 import { FilesCreateDto } from '../data/dto/file.create.dto';
 import { FilesRepository } from '../data/file.repository';
 
 @Injectable()
 export class FileServerService {
-  private readonly redisPrefixKey = 'file';
-  constructor(
-    private readonly redisService: RedisManagerService,
-    private readonly fileRepository: FilesRepository,
-  ) {}
+  constructor(private readonly fileRepository: FilesRepository) {}
 
   async getFileInfo(fileid: string) {
     return this.fileRepository.getFileInfo(fileid);
-    // //* First find on Redis
-    // //* If not exist on REdis, find on DB, and add it to Redis, and return it
-    // const key = `${this.redisPrefixKey}/${fileid}`;
-    // const result = await this.redisService.getCache(key);
-    // if (!!result) {
-    //   return {
-    //     success: true,
-    //     result,
-    //   };
-    // }
-
-    // return {
-    //   success: false,
-    // };
   }
 
   async uploadFile(userid: string, files: Express.Multer.File[]) {
@@ -54,7 +33,6 @@ export class FileServerService {
           fileName,
         });
 
-        console.log(oneFile);
         saveResult.push(await this.fileRepository.createFile(oneFile));
       });
     } catch (err) {
@@ -71,26 +49,5 @@ export class FileServerService {
       code: 201,
       result: saveResult,
     };
-
-    //* cat.id와 일치하는 고양이의 파일 변경
-    // const newCat = await this.fileRepository.findByIdAndUpdateImg(
-    //   cat.id,
-    //   fileName,
-    // );
-
-    // return this.fileRepository.uploadFile(fileInfo);
-    // //* Just Add it on DB
-    // console.log('UploadFile');
-    // const key = `${this.redisPrefixKey}/${fileInfo.fileid}`;
-    // const result = await this.redisService.setCache(key, fileInfo);
-    // if (!!result) {
-    //   return {
-    //     success: true,
-    //     result,
-    //   };
-    // }
-    // //* hey
-    // return {
-    //   success: false,
   }
 }
