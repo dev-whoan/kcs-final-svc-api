@@ -11,7 +11,7 @@ export class FileServerService {
   constructor(private readonly fileRepository: FileInfoRepository) {}
 
   async getFileInfo(fileid: string): Promise<FileInfoMicroServiceDto> {
-    return (await this.fileRepository.findOne(
+    return (await this.fileRepository.findById(
       fileid,
     )) as FileInfoMicroServiceDto;
   }
