@@ -1,56 +1,60 @@
-import { FileInfoMicroServiceDto } from './data/dto/file-info.ms.dto';
+import { FileInfoMicroserviceDto } from './data/dto/file-info.ms.dto';
 import { Injectable, HttpStatus, Logger } from '@nestjs/common';
-import { saveFile } from '../common/utils/file.manager';
-import { multerOptions } from '../common/utils/multer.options';
-import { FileInfoCreateDto } from './data/dto/file-info.create.dto';
 import { FileInfoRepository } from './data/file.repository';
+import * as path from 'path';
+import { FileInfoCreateDto } from './data/dto/file-info.create.dto';
 
 @Injectable()
 export class FileServerService {
   private logger = new Logger('FileServerService');
   constructor(private readonly fileRepository: FileInfoRepository) {}
 
-  async getFileInfo(fileid: string): Promise<FileInfoMicroServiceDto> {
+  async getFileInfo(fileid: string): Promise<FileInfoMicroserviceDto> {
     return (await this.fileRepository.findById(
       fileid,
-    )) as FileInfoMicroServiceDto;
+    )) as FileInfoMicroserviceDto;
   }
 
   async uploadFile(
     userid: string,
     files: Express.Multer.File[],
-  ): Promise<FileInfoMicroServiceDto[]> {
+    folder: string,
+  ): Promise<FileInfoMicroserviceDto[] | number> {
     //* 업로드 된 파일 이름 획득
-    const folder = 'board';
-    const saveResult: FileInfoMicroServiceDto[] = [];
-    //* folder 생성용
-    multerOptions(folder);
     try {
+      const saveResult: FileInfoMicroserviceDto[] = [];
+
       files.forEach(async (file, index) => {
-        const { originalname, buffer } = file;
-        const { originalName, filePath, fileName } = await saveFile(
-          originalname,
-          folder,
-          buffer,
-        );
+        const originalName = file.originalname;
+        const newName = Date.now().toString();
+        const destination = path.join(process.env.PWD, `uploads/${folder}`);
+        const newFileName = newName + path.extname(originalName);
+        const finalPath = path.join(destination, newFileName);
+
         const oneFile = new FileInfoCreateDto({
           owner: userid,
           originalName,
-          filePath,
-          fileName,
+          filePath: destination,
+          fileName: newFileName,
         });
 
         saveResult.push(
           (await this.fileRepository.storeFileInfoInDatabase(
             oneFile,
-          )) as FileInfoMicroServiceDto,
+          )) as FileInfoMicroserviceDto,
         );
+
+        //* db 저장
       });
 
       return saveResult;
     } catch (err) {
-      this.logger.error(err.stack || err);
-      return null;
+      this.logger.error(
+        `Error Occured While uploadFile [${userid}]`,
+        err.stack || err,
+      );
+
+      return HttpStatus.BAD_REQUEST;
     }
   }
 }

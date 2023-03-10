@@ -1,10 +1,14 @@
-import { Controller, Get, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { RpcFilesInterceptor } from '../common/interceptor/file-payload-interceptor/rpc-files.interceptor';
+import { MicroserviceDataLogger } from '../common/interceptor/logger/logger.interceptor';
+import { multerOptions } from '../common/interceptor/file-payload-interceptor/multer/multer.options';
 import { MicroserviceDataWrapper } from '../common/data/microservice-data-wrapper';
-import { FileInfoMicroServiceDto } from './data/dto/file-info.ms.dto';
+import { FileInfoMicroserviceDto } from './data/dto/file-info.ms.dto';
 import { FileServerService } from './file-server.service';
 
 @Controller('files')
+@UseInterceptors(MicroserviceDataLogger('FileServerController'))
 export class FileServerController {
   private readonly redisPrefixKey = 'file';
   constructor(private readonly fileService: FileServerService) {}
@@ -16,7 +20,7 @@ export class FileServerController {
 
   @MessagePattern({ cmd: 'read_file' })
   async getFileInfo(
-    @Payload() data: FileInfoMicroServiceDto,
+    @Payload() data: FileInfoMicroserviceDto,
   ): Promise<MicroserviceDataWrapper> {
     const fileInfoResult = await this.fileService.getFileInfo(`${data.id}`);
     const success = fileInfoResult !== null;
@@ -30,14 +34,25 @@ export class FileServerController {
     };
   }
 
-  //async uploadFile(user: Users, files: Array<Express.Multer.File>)
   @MessagePattern({ cmd: 'create_file' })
-  // @UseInterceptors(FilesInterceptor('files', 10, multerOptions('boards')))
+  @UseInterceptors(RpcFilesInterceptor('files', 10, multerOptions('boards')))
   async uploadFile(
     @Payload('userid') userid: string,
     @Payload('files') files: Express.Multer.File[],
   ): Promise<MicroserviceDataWrapper> {
-    const fileInfoResult = await this.fileService.uploadFile(userid, files);
+    const fileInfoResult = await this.fileService.uploadFile(
+      userid,
+      files,
+      'boards',
+    );
+
+    if (typeof fileInfoResult === 'number') {
+      return {
+        success: false,
+        code: fileInfoResult,
+      };
+    }
+
     const success = fileInfoResult !== null;
     const code = success
       ? HttpStatus.CREATED

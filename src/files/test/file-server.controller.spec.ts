@@ -51,7 +51,7 @@ describe('FileServerController', () => {
       });
 
       //* Controller may call the function through the service
-      test('then it should call fileServerService', () => {
+      test('then it should call fileServerService.getFileInfo', () => {
         //* With the Given Parameter
         expect(service.getFileInfo).toBeCalledWith(
           mockFileInfoMicroServiceDto.id,
@@ -78,10 +78,11 @@ describe('FileServerController', () => {
         ]);
       });
 
-      test('then it should call fileServerService', () => {
+      test('then it should call fileServerService.uploadFile', () => {
         expect(service.uploadFile).toBeCalledWith(
           mockFileInfoMicroServiceDto.owner,
           [multerFileMock()],
+          'boards',
         );
       });
 

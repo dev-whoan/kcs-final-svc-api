@@ -1,7 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { FileInfo } from '../file-info.schema';
 
-export class FileInfoMicroServiceDto extends PickType(FileInfo, [
+export class FileInfoMicroserviceDto extends PickType(FileInfo, [
   'owner',
   'filePath',
   'fileName',

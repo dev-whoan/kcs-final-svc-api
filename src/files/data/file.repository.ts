@@ -1,8 +1,6 @@
-import { FileInfoMicroServiceDto } from './dto/file-info.ms.dto';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { MicroserviceDataWrapper } from '../../common/data/microservice-data-wrapper';
+import { Model } from 'mongoose';
 import { RedisManagerService } from '../../redis-manager/redis-manager.service';
 import { FileInfo } from './file-info.schema';
 

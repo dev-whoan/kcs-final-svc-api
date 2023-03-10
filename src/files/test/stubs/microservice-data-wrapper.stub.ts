@@ -1,9 +1,9 @@
 import { FileInfo } from './../../data/file-info.schema';
-import { FileInfoMicroServiceDto } from './../../data/dto/file-info.ms.dto';
+import { FileInfoMicroserviceDto } from './../../data/dto/file-info.ms.dto';
 import { HttpStatus } from '@nestjs/common';
 import { MicroserviceDataWrapper } from './../../../common/data/microservice-data-wrapper';
 
-export const mockFileInfoMicroServiceDto: FileInfoMicroServiceDto = {
+export const mockFileInfoMicroServiceDto: FileInfoMicroserviceDto = {
   owner: 'test-owner',
   id: '6407201654f23c80ad6c3bf1',
   filePath: 'test-path',
