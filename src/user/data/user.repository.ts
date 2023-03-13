@@ -2,10 +2,9 @@ import { RedisManagerService } from '../../redis-manager/redis-manager.service';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { MicroserviceDataWrapper } from '../../common/data/microservice-data-wrapper';
 import { UserCreateDto } from './dto/user-create.dto';
-import { UserMicroserviceDto } from './dto/user.dto';
 import { User } from './user.schema';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UserRepository {
@@ -32,6 +31,21 @@ export class UserRepository {
 
   async find() {}
 
+  async update(user: UserCreateDto, userid: string): Promise<User | number> {
+    try {
+      const result = await this.userModel.findById(userid);
+
+      result.password = await bcrypt.hash(user.password, 10);
+      result.nickname = user.nickname;
+
+      const newUser = await result.save();
+      return newUser.readOnlyData as User;
+    } catch (e) {
+      this.logger.error(e.stack || e);
+      return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+  }
+
   async findById(id: string): Promise<User | number> {
     try {
       //* First find on Redis
@@ -49,7 +63,7 @@ export class UserRepository {
 
       const dbResult = await this.userModel.findById(id);
 
-      this.logger.log('findById.dbResult:', !!dbResult);
+      this.logger.log(`findById.dbResult: ${!!dbResult}`);
       this.logger.debug(dbResult);
 
       if (!!dbResult) {
@@ -84,7 +98,7 @@ export class UserRepository {
         email,
       });
 
-      this.logger.log('findByEmail.dbResult:', !!dbResult);
+      this.logger.log(`findByEmail.dbResult: ${!!dbResult}`);
       this.logger.debug(dbResult);
 
       if (!!dbResult) {

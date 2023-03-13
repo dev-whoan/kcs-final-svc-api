@@ -66,13 +66,9 @@ export class UserService {
     const result = await this.userRepository.findByEmail(email);
     this.logger.log('getUserByEmail.result: ', result);
 
-    if (!result) {
-      return HttpStatus.INTERNAL_SERVER_ERROR;
-    }
+    if (!result) return HttpStatus.INTERNAL_SERVER_ERROR;
     // 따로 번호가 온 경우
-    if (typeof result === 'number') {
-      return result;
-    }
+    if (typeof result === 'number') return result;
 
     if (!!result) {
       //* 비밀번호 검사
@@ -108,21 +104,34 @@ export class UserService {
       password: hashedPassword,
     });
 
-    if (!result) {
-      return HttpStatus.INTERNAL_SERVER_ERROR;
-    }
-    if (typeof result === 'number') {
-      return result;
-    }
+    if (!result) return HttpStatus.INTERNAL_SERVER_ERROR;
+    if (typeof result === 'number') return result;
+    if (!!result) return new UserMicroserviceDto(result);
 
-    if (!!result) {
-      return new UserMicroserviceDto(result);
-    }
     return HttpStatus.CONFLICT;
   }
 
   async signUp() {}
-  async modifyUserInformation(user: UserCreateDto) {}
+  async modifyUserInformation(
+    user: UserCreateDto,
+    userid: string,
+  ): Promise<UserMicroserviceDto | number> {
+    const result = await this.userRepository.update(user, userid);
+
+    if (!result) {
+      this.logger.error(
+        'modifyUserInformation:: Internal Server Error Occured',
+      );
+      return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+    if (typeof result === 'number') return result;
+    if (!!result) return new UserMicroserviceDto(result);
+
+    this.logger.error(
+      'modifyUserInformation:: Cannot get any result from userRepository.update',
+    );
+    return HttpStatus.BAD_REQUEST;
+  }
 
   async showMyPage(userid: string) {}
 }

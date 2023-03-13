@@ -1,66 +1,33 @@
-import { Controller, Get, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { SuccessInterceptor } from '../common/interceptor/success/success.interceptor';
 import { MicroserviceDataWrapper } from '../common/data/microservice-data-wrapper';
 import { UserCreateDto } from './data/dto/user-create.dto';
 import { UserMicroserviceDto } from './data/dto/user.dto';
 import { UserService } from './user.service';
+import { MicroserviceDataLogger } from '../common/interceptor/logger/logger.interceptor';
 
 @Controller('users')
+@UseInterceptors(SuccessInterceptor(), MicroserviceDataLogger('UserController'))
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @MessagePattern({ cmd: 'create_user' })
-  async signUp(
-    @Payload('user') user: UserCreateDto,
-  ): Promise<MicroserviceDataWrapper> {
-    const userResult = await this.userService.createUser(user);
-    const success = userResult !== null;
-    const code = success ? HttpStatus.CREATED : HttpStatus.NO_CONTENT;
-
-    if (typeof userResult === 'number') {
-      return {
-        success: false,
-        code: userResult,
-      };
-    }
-
-    const userMsData = new UserMicroserviceDto(userResult);
-
-    const result = [userMsData];
-    return {
-      success,
-      code,
-      result,
-    };
+  async signUp(@Payload('user') user: UserCreateDto) {
+    return await this.userService.createUser(user);
   }
 
   @MessagePattern({ cmd: 'read_user' })
-  async getUserById(
-    @Payload('userid') id: string,
-  ): Promise<MicroserviceDataWrapper> {
-    const userResult = await this.userService.getUserById(id);
-    const success = userResult !== null;
-    const code = success ? HttpStatus.OK : HttpStatus.NO_CONTENT;
-    if (typeof userResult === 'number') {
-      return {
-        success: false,
-        code: code,
-      };
-    }
-
-    const userMsData = new UserMicroserviceDto(userResult);
-    const result = [userMsData];
-    return {
-      success,
-      code,
-      result,
-    };
+  async getUserById(@Payload('userid') id: string) {
+    return await this.userService.getUserById(id);
   }
 
   @MessagePattern({ cmd: 'update_user' })
-  updateUserInfo(@Payload('user') user: UserCreateDto) {
-    return this.userService.modifyUserInformation(user);
-    //    return this.userService.getUser('user/test');
+  async updateUserInfo(
+    @Payload('user') user: UserCreateDto,
+    @Payload('userid') userid: string,
+  ) {
+    return await this.userService.modifyUserInformation(user, userid);
   }
 
   @MessagePattern({ cmd: 'delete_user' })
@@ -73,49 +40,12 @@ export class UserController {
   async logIn(
     @Payload('password') password: string,
     @Payload('email') email: string,
-  ): Promise<MicroserviceDataWrapper> {
-    const userResult = await this.userService.logIn(password, email);
-
-    const success = userResult !== null;
-    const code = success ? HttpStatus.OK : HttpStatus.NO_CONTENT;
-
-    if (typeof userResult === 'number') {
-      return {
-        success: false,
-        code: code,
-      };
-    }
-
-    const userMsData = new UserMicroserviceDto(userResult);
-    const result = [userMsData];
-    return {
-      success,
-      code,
-      result,
-    };
+  ) {
+    return await this.userService.logIn(password, email);
   }
 
   @MessagePattern({ cmd: 'find_user' })
-  async findUser(
-    @Payload('email') email: string,
-  ): Promise<MicroserviceDataWrapper> {
-    const userResult = await this.userService.resetPassword(email);
-    const success = userResult !== null;
-    const code = success ? HttpStatus.OK : HttpStatus.NO_CONTENT;
-
-    if (typeof userResult === 'number') {
-      return {
-        success: false,
-        code: code,
-      };
-    }
-    const userMsData = new UserMicroserviceDto(userResult);
-    const result = [userMsData];
-
-    return {
-      success,
-      code,
-      result,
-    };
+  async findUser(@Payload('email') email: string) {
+    return await this.userService.resetPassword(email);
   }
 }
