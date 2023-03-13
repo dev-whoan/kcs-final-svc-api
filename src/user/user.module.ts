@@ -6,8 +6,6 @@ import { UserController } from './user.controller';
 import { UserRepository } from './data/user.repository';
 import { UserService } from './user.service';
 import { User, _UserSchema } from './data/user.schema';
-import { MailerModule } from '@nestjs-modules/mailer';
-import Handlebars from 'handlebars';
 import { MailModule } from 'src/mail/mail.module';
 
 @Module({

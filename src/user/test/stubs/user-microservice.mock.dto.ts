@@ -10,6 +10,7 @@ export const mockUserMicroserviceDtoStub = (): UserMicroserviceDto => {
     email: 'test@test.com',
     nickname: 'test-nickname',
     profileimage: 'test-profile',
+    password: 'test-password',
   };
 };
 
@@ -30,6 +31,7 @@ export const mockMicroserviceDataWrapperStub = (): MicroserviceDataWrapper => {
 };
 
 export const mockUsercreateDto: UserCreateDto = {
-  email: 'hihi2',
-  nickname: 'ss',
+  email: 'test-user',
+  nickname: 'test-nickname',
+  password: 'test-password',
 };

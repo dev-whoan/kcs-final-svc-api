@@ -1,11 +1,9 @@
-import { User } from './data/user.schema';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { RedisManagerService } from '../redis-manager/redis-manager.service';
 import { UserCreateDto } from './data/dto/user-create.dto';
 import { UserRepository } from './data/user.repository';
 import { UserMicroserviceDto } from './data/dto/user.dto';
-import * as bcrypt from 'bcrypt';
-import { plainToInstance } from 'class-transformer';
+import * as bcrypt from 'bcryptjs';
 import { MailService } from '../mail/mail.service';
 
 @Injectable()
@@ -17,7 +15,6 @@ export class UserService {
     private readonly mailService: MailService,
   ) {}
   async getUserById(userid: string): Promise<UserMicroserviceDto | number> {
-    console.log('userid', userid);
     const result = await this.userRepository.findById(userid);
     this.logger.log('getUserById.result: ', result);
     if (!result) {
@@ -33,13 +30,13 @@ export class UserService {
     return HttpStatus.NO_CONTENT;
   }
 
-  async resetPassword(email: string): Promise<UserMicroserviceDto | number> {
+  async resetPassword(email: string): Promise<number> {
     const result = await this.userRepository.findByEmail(email);
 
     if (!result) {
       return HttpStatus.INTERNAL_SERVER_ERROR;
     }
-    // 따로 번호가 온 경우
+
     if (typeof result === 'number') {
       return result;
     }
@@ -51,19 +48,18 @@ export class UserService {
       alter_password,
       result.email,
     );
-    if (sendMail_return_value == HttpStatus.INTERNAL_SERVER_ERROR) {
-      return sendMail_return_value;
+    if (sendMail_return_value === HttpStatus.INTERNAL_SERVER_ERROR) {
+      return HttpStatus.INTERNAL_SERVER_ERROR;
     }
-    result.save();
+    await result.save();
 
-    //이메일 보내기
     if (!!result) {
-      return new UserMicroserviceDto(result);
+      return HttpStatus.OK;
     }
-    return HttpStatus.NO_CONTENT;
+    return HttpStatus.BAD_REQUEST;
   }
 
-  async login(
+  async logIn(
     password: string,
     email: string,
   ): Promise<UserMicroserviceDto | number> {
@@ -125,9 +121,8 @@ export class UserService {
     return HttpStatus.CONFLICT;
   }
 
-  //회원가입
   async signUp() {}
-  async modifyUserInformation() {}
+  async modifyUserInformation(user: UserCreateDto) {}
 
   async showMyPage(userid: string) {}
 }

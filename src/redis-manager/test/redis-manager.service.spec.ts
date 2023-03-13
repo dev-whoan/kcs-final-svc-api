@@ -5,6 +5,7 @@ import { CACHE_MANAGER } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { Cache } from 'cache-manager';
 import { RedisManagerService } from '../redis-manager.service';
+import { mockUserMicroserviceDtoStub } from '../../user/test/stubs/user-microservice.mock.dto';
 
 describe('RedisManagerController', () => {
   let service: RedisManagerService;
@@ -30,11 +31,14 @@ describe('RedisManagerController', () => {
     let data: string;
 
     beforeEach(async () => {
-      data = await service.setCache(key, mockUserMicroserviceDto as User);
+      data = await service.setCache(key, mockUserMicroserviceDtoStub() as User);
     });
 
     test('then it should call redis.set', () => {
-      expect(cache.set).toBeCalledWith(key, mockUserMicroserviceDto as User);
+      expect(cache.set).toBeCalledWith(
+        key,
+        mockUserMicroserviceDtoStub() as User,
+      );
     });
 
     test('then it should return a "OK"', () => {
@@ -58,8 +62,8 @@ describe('RedisManagerController', () => {
 
     //* And the result should be microServiceGetDataStub()
     //* Which is Mock Data
-    test('then it should return a FileInfo', () => {
-      expect(data).toEqual(mockUserMicroserviceDto);
+    test('then it should return a User Info', () => {
+      expect(data).toEqual(mockUserMicroserviceDtoStub());
     });
   });
 

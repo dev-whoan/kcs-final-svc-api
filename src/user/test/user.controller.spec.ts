@@ -9,15 +9,12 @@ import {
   mockMicroCreatedstub,
   mockMicroserviceDataWrapperStub,
   mockUsercreateDto,
-  mockUserMicroserviceDtoStub,
 } from './stubs/user-microservice.mock.dto';
-
-let k: UserCreateDto = new UserCreateDto();
 
 describe('UserController', () => {
   let controller: UserController;
   let service: UserService;
-  let mailservice: MailerService;
+  let mailService: MailerService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,7 +37,7 @@ describe('UserController', () => {
     const testEmail = 'test-email';
     const alter_password = 'pass';
     beforeEach(async () => {
-      data = await controller.resetPassword(testEmail);
+      data = await controller.findUser(testEmail);
       //object dtp
     });
 
@@ -58,7 +55,6 @@ describe('UserController', () => {
     const id = 'test-id';
     beforeEach(async () => {
       data = await controller.getUserById(id);
-      // console.log('dat는', data);
     });
     test('then it should call userService.getUserById', () => {
       expect(service.getUserById).toBeCalledWith(id);
@@ -78,7 +74,7 @@ describe('UserController', () => {
     });
 
     test('should call userService.Login', () => {
-      expect(service.login).toBeCalledWith(email, password);
+      expect(service.logIn).toBeCalledWith(email, password);
     });
 
     test('should return value', () => {
