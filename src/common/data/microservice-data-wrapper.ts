@@ -1,4 +1,4 @@
-import { UserMicroserviceDto } from './../../user/data/dto/user.dto';
+import { UserMicroserviceDto } from '../../user/data/dto/user.dto';
 
 export interface MicroserviceDataWrapper {
   success: boolean;

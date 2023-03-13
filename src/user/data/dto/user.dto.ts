@@ -9,8 +9,6 @@ export class UserMicroserviceDto extends PickType(User, [
   'profileimage',
 ] as const) {
   //* 예민한 정보 제외
-  @Exclude()
-  password: string;
 
   //* 예민한 정보 제외
   constructor(partial: Partial<UserMicroserviceDto>) {

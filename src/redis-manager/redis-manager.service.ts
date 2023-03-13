@@ -1,4 +1,4 @@
-import { UserMicroserviceDto } from './../user/data/dto/user.dto';
+import { UserMicroserviceDto } from '../user/data/dto/user.dto';
 import { User } from '../user/data/user.schema';
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cache } from 'cache-manager';

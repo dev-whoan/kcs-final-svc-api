@@ -6,6 +6,7 @@ import { UserRepository } from './data/user.repository';
 import { UserMicroserviceDto } from './data/dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UserService {
@@ -13,6 +14,7 @@ export class UserService {
   constructor(
     private readonly redisService: RedisManagerService,
     private readonly userRepository: UserRepository,
+    private readonly mailService: MailService,
   ) {}
   async getUserById(userid: string): Promise<UserMicroserviceDto | number> {
     console.log('userid', userid);
@@ -33,7 +35,7 @@ export class UserService {
 
   async resetPassword(email: string): Promise<UserMicroserviceDto | number> {
     const result = await this.userRepository.findByEmail(email);
-    this.logger.log('getUserByEmail.result: ', result);
+
     if (!result) {
       return HttpStatus.INTERNAL_SERVER_ERROR;
     }
@@ -41,9 +43,19 @@ export class UserService {
     if (typeof result === 'number') {
       return result;
     }
+
     const alter_password = Math.random().toString(36).slice(2);
     result.password = alter_password;
+
+    const sendMail_return_value = await this.mailService.sendMail(
+      alter_password,
+      result.email,
+    );
+    if (sendMail_return_value == HttpStatus.INTERNAL_SERVER_ERROR) {
+      return sendMail_return_value;
+    }
     result.save();
+
     //이메일 보내기
     if (!!result) {
       return new UserMicroserviceDto(result);

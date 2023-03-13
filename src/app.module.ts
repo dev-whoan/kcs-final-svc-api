@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { HealthCheckModule } from './health-check/health-check.module';
 import { RedisManagerModule } from './redis-manager/redis-manager.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       useNewUrlParser: true,
       useUnifiedTopology: true,
     }),
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

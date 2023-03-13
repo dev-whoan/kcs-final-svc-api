@@ -1,6 +1,6 @@
-import { User } from './../../user/data/user.schema';
+import { User } from '../../user/data/user.schema';
 
-import { CACHE_MANAGER as MockCacheManager } from './../__mocks__/redis-manager.service';
+import { CACHE_MANAGER as MockCacheManager } from '../__mocks__/redis-manager.service';
 import { CACHE_MANAGER } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { Cache } from 'cache-manager';

@@ -1,5 +1,7 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { resourceUsage } from 'process';
 import { MicroserviceDataWrapper } from '../common/data/microservice-data-wrapper';
 import { UserCreateDto } from './data/dto/user-create.dto';
 import { UserMicroserviceDto } from './data/dto/user.dto';
@@ -32,11 +34,14 @@ export class UserController {
     };
   }
 
-  @MessagePattern({ cmd: 'read_user_by_email' })
+  @MessagePattern({ cmd: 'reset_password' })
   async resetPassword(
     @Payload('email') email: string,
   ): Promise<MicroserviceDataWrapper> {
     const userResult = await this.userService.resetPassword(email);
+
+    console.log('get my result', userResult);
+
     const success = userResult !== null;
     const code = success ? HttpStatus.OK : HttpStatus.NO_CONTENT;
 
@@ -54,6 +59,7 @@ export class UserController {
     // save
 
     const result = [userMsData];
+    console.log('and it have changed into', result);
     return {
       success,
       code,
@@ -103,6 +109,7 @@ export class UserController {
     }
 
     const userMsData = new UserMicroserviceDto(userResult);
+
     const result = [userMsData];
     return {
       success,
@@ -127,8 +134,27 @@ export class UserController {
   async random() {
     const k = Math.random().toString(36).slice(2);
 
-    console.log(k);
-    console.log('fds');
     return k;
+  }
+  @Get('send')
+  async send_mail() {
+    /*
+    this.mailerService
+      .sendMail({
+        to: 'wlwhs5014@naver.com',
+        from: 'wlwhs3154@gmail.com',
+        subject: '이거되나요?',
+        text: 'hihi',
+      })
+      .then((result) => {
+        console.log('성공함?');
+        console.log(result);
+      })
+      .catch((e) => {
+        console.log('에러');
+        console.log(e);
+      });
+    return '메일 보내짐?';
+  */
   }
 }
