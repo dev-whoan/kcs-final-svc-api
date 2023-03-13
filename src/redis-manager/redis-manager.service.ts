@@ -1,8 +1,6 @@
-import { UserMicroserviceDto } from '../user/data/dto/user.dto';
 import { User } from '../user/data/user.schema';
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class RedisManagerService {
@@ -32,7 +30,6 @@ export class RedisManagerService {
     try {
       return await this.cacheManager.get(key);
     } catch (e) {
-      console.error(e);
       this.logger.error('Redis can not connect Check Redis [/]');
       return null;
     }

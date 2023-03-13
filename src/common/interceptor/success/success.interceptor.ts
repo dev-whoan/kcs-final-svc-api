@@ -8,8 +8,8 @@ import {
 } from '@nestjs/common';
 
 import { map, Observable } from 'rxjs';
-import { MicroserviceDataWrapper } from 'src/common/data/microservice-data-wrapper';
-import { UserMicroserviceDto } from 'src/user/data/dto/user.dto';
+import { MicroserviceDataWrapper } from '../../data/microservice-data-wrapper';
+import { UserMicroserviceDto } from '../../../user/data/dto/user.dto';
 
 export function SuccessInterceptor(): Type<NestInterceptor> {
   class MixinInterceptor implements NestInterceptor {

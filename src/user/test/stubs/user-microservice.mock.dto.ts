@@ -10,7 +10,6 @@ export const mockUserMicroserviceDtoStub = (): UserMicroserviceDto => {
     email: 'test@test.com',
     nickname: 'test-nickname',
     profileimage: 'test-profile',
-    password: 'test-password',
   };
 };
 

@@ -10,15 +10,10 @@ export class UserMicroserviceDto extends PickType(User, [
 ] as const) {
   //* 예민한 정보 제외
 
-  @Exclude()
-  password: string;
-
   //* 예민한 정보 제외
   constructor(partial: Partial<UserMicroserviceDto>) {
     super();
-    if (!!partial && partial.password) {
-      delete partial.password;
-    }
+
     this.id = partial.id;
     this.email = partial.email;
     this.nickname = partial.nickname;
