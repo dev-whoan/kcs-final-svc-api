@@ -1,35 +1,13 @@
-import { FileInfo } from './../../data/file-info.schema';
-import { FileInfoMicroserviceDto } from './../../data/dto/file-info.ms.dto';
-import { HttpStatus } from '@nestjs/common';
-import { MicroserviceDataWrapper } from './../../../common/data/microservice-data-wrapper';
+import { FileInfoReadOnly } from 'src/files/data/file-info.schema';
 
-export const mockFileInfoMicroServiceDto: FileInfoMicroserviceDto = {
+export const mockFileInfoMicroServiceDto: FileInfoReadOnly = {
   owner: 'test-owner',
   id: '6407201654f23c80ad6c3bf1',
   filePath: 'test-path',
   fileName: 'test-name',
+  size: 12345,
 };
 
-export const microServiceGetDataStub = (): MicroserviceDataWrapper => {
-  return {
-    success: true,
-    code: HttpStatus.OK,
-    result: [mockFileInfoMicroServiceDto],
-  };
-};
-
-export const microServiceCreatedDataStub = (): MicroserviceDataWrapper => {
-  return {
-    success: true,
-    code: HttpStatus.CREATED,
-    result: [mockFileInfoMicroServiceDto],
-  };
-};
-
-export const microServiceDeletedDataStub = (): MicroserviceDataWrapper => {
-  return {
-    success: true,
-    code: HttpStatus.OK,
-    result: true,
-  };
+export const microServiceCreatedDataStub = (): FileInfoReadOnly[] => {
+  return [mockFileInfoMicroServiceDto];
 };

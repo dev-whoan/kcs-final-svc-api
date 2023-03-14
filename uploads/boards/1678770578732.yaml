@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-post-service
+  namespace: redis
+spec:
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 6384
+    targetPort: 6379
+  selector:
+    app: redis-post-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-post-deploy
+  namespace: redis
+  labels:
+    app: redis-post-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-post-pod
+  template:
+    metadata:
+      labels:
+        app: redis-post-pod
+    spec:
+      containers:
+        - name: redis
+          image: redis:alpine3.17
+          ports:
+            - containerPort: 6379
+          env:
+            - name: REDIS_PASSWORD
+              value: test123
+          volumeMounts:
+            - mountPath: /redis-master-data
+              name: data
+            - mountPath: /redis-master
+              name: config
+          command:
+            - redis-server
+            - "/redis-master/redis.conf"
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 700Mi
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: redis-config
+            items:
+            - key: redis-config
+              path: redis.conf

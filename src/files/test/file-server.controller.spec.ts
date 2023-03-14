@@ -1,13 +1,12 @@
 import { multerFileMock } from './stubs/multer-file.stub';
-import { MicroserviceDataWrapper } from './../../common/data/microservice-data-wrapper';
 import {
-  microServiceGetDataStub,
   microServiceCreatedDataStub,
   mockFileInfoMicroServiceDto,
 } from './stubs/microservice-data-wrapper.stub';
 import { FileServerService } from '../file-server.service';
 import { FileServerController } from '../file-server.controller';
 import { Test } from '@nestjs/testing';
+import { FileInfo, FileInfoReadOnly } from '../data/file-info.schema';
 
 //* Find Actual Service, It will Auto Mock from __mocks__
 jest.mock('../file-server.service');
@@ -43,11 +42,11 @@ describe('FileServerController', () => {
   describe('getFileInfo', () => {
     //* Make Sure that the Right Function is Called
     describe('when getFileInfo is called', () => {
-      let data: MicroserviceDataWrapper;
+      let data: FileInfoReadOnly;
 
       //* Call the function through the controller
       beforeEach(async () => {
-        data = await controller.getFileInfo(mockFileInfoMicroServiceDto);
+        data = await controller.getFileInfo(mockFileInfoMicroServiceDto.id);
       });
 
       //* Controller may call the function through the service
@@ -60,22 +59,22 @@ describe('FileServerController', () => {
 
       //* And the result should be microServiceGetDataStub()
       //* Which is Mock Data
-      test('then it should return a MicroserviceDataWrapper', () => {
-        expect(data).toEqual(microServiceGetDataStub());
+      test('then it should return a FileInfoMicroserviceDto', () => {
+        expect(data).toEqual(mockFileInfoMicroServiceDto);
       });
     });
   });
 
   describe('uploadFile', () => {
     describe('when uploadFile is called', () => {
-      let data: MicroserviceDataWrapper;
+      let data: FileInfo[];
 
       //    @Payload('userid') userid: string,
       //    @Payload('files') files: Express.Multer.File[],
       beforeEach(async () => {
-        data = await controller.uploadFile(mockFileInfoMicroServiceDto.owner, [
+        data = (await controller.uploadFile(mockFileInfoMicroServiceDto.owner, [
           multerFileMock(),
-        ]);
+        ])) as FileInfo[];
       });
 
       test('then it should call fileServerService.uploadFile', () => {
@@ -86,7 +85,7 @@ describe('FileServerController', () => {
         );
       });
 
-      test('then it should return a MicroserviceDataWrapper', () => {
+      test('then it should return a FileInfoMicroserviceDto', () => {
         expect(data).toEqual(microServiceCreatedDataStub());
       });
     });

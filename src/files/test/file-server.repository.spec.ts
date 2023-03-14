@@ -1,10 +1,7 @@
 import { RedisManagerService as MockRedisManagerService } from './../__mocks__/redis-manager.service';
 import { RedisManagerService } from '../../redis-manager/redis-manager.service';
 import { FileInfo } from './../data/file-info.schema';
-import {
-  microServiceGetDataStub,
-  mockFileInfoMicroServiceDto,
-} from './stubs/microservice-data-wrapper.stub';
+import { mockFileInfoMicroServiceDto } from './stubs/microservice-data-wrapper.stub';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { FileInfoRepository } from '../data/file.repository';
@@ -82,7 +79,7 @@ describe('FileInfoRepository', () => {
       });
 
       test('it should call findById', () => {
-        expect(model.findById).toHaveBeenCalledWith({ id: 'no-data' });
+        expect(model.findById).toHaveBeenCalledWith('no-data');
       });
 
       test('it should return a fileInfo from redis', () => {

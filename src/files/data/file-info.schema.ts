@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory, SchemaOptions } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Document } from 'mongoose';
 
 const options: SchemaOptions = {
@@ -55,11 +55,37 @@ export class FileInfo extends Document {
   @IsNotEmpty()
   originalName: string;
 
+  @ApiProperty({
+    example: '26443',
+    description: 'File Size (Byte)',
+  })
+  @Prop({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  size: number;
+
+  @ApiProperty({
+    example: 'true | false',
+    description: 'File 삭제 여부',
+  })
+  @Prop({ required: true, default: false })
+  @IsBoolean()
+  removed: boolean;
+
+  @ApiProperty({
+    example: 'Date',
+    description: 'File 삭제 날짜',
+  })
+  @Prop({ required: false })
+  @IsNumber()
+  removedAt: number;
+
   readonly readOnlyData: {
-    owner: string;
     id: string;
+    owner: string;
     filePath: string;
     fileName: string;
+    size: number;
   };
 }
 
@@ -72,7 +98,19 @@ _FileInfoSchema.virtual('readOnlyData').get(function (this: FileInfo) {
     owner: this.owner,
     filePath: this.filePath,
     fileName: this.fileName,
+    size: this.size,
   };
 });
 
+_FileInfoSchema.set('toObject', { virtuals: true });
+_FileInfoSchema.set('toJSON', { virtuals: true });
+
 export const FileInfoSchema = _FileInfoSchema;
+
+export interface FileInfoReadOnly {
+  id: string;
+  owner: string;
+  filePath: string;
+  fileName: string;
+  size: number;
+}

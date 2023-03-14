@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { MulterModuleOptions } from '@nestjs/platform-express';
 import * as multer from 'multer';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Stream } from 'stream';
@@ -57,7 +57,7 @@ export function RpcFilesInterceptor(
       const uploadedArray = [];
 
       //* get destination from multerOptions
-
+      this.logger.debug('check rpcData:', rpcData);
       await new Promise<void>((resolve, reject) => {
         const resolveCount = rpcData.files.length;
         let currentCount = 0;
@@ -119,9 +119,7 @@ export function RpcFilesInterceptor(
         });
       });
 
-      return next
-        .handle()
-        .pipe(map((data) => ({ ...data, result: uploadedArray })));
+      return next.handle(); //.pipe(map((data) => ({ result: uploadedArray })));
     }
   }
   const Interceptor = mixin(MixinInterceptor);

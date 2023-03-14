@@ -2,6 +2,7 @@ import {
   CallHandler,
   ExecutionContext,
   HttpStatus,
+  Logger,
   mixin,
   NestInterceptor,
   Type,
@@ -9,10 +10,13 @@ import {
 
 import { map, Observable } from 'rxjs';
 import { MicroserviceDataWrapper } from '../../data/microservice-data-wrapper';
-import { FileInfoMicroserviceDto } from '../../../files/data/dto/file-info.ms.dto';
+import { FileInfo } from '../../../files/data/file-info.schema';
 
-export function SuccessInterceptor(): Type<NestInterceptor> {
+export function SuccessInterceptor(
+  successCode: HttpStatus,
+): Type<NestInterceptor> {
   class MixinInterceptor implements NestInterceptor {
+    private logger = new Logger('SuccessInterceptor');
     async intercept(
       context: ExecutionContext,
       next: CallHandler,
@@ -33,18 +37,31 @@ export function SuccessInterceptor(): Type<NestInterceptor> {
 
     setDataAsMicroserviceDataWrapper(fileResult): MicroserviceDataWrapper {
       const success = fileResult !== null;
-      const code = success ? HttpStatus.CREATED : HttpStatus.NO_CONTENT;
+      const code = success ? successCode : HttpStatus.NO_CONTENT;
 
       if (typeof fileResult === 'number') {
+        if (fileResult >= 200 && fileResult < 400) {
+          return {
+            success: true,
+            code: fileResult,
+          };
+        }
         return {
           success: false,
           code: fileResult,
         };
       }
 
-      const fileMsData = new FileInfoMicroserviceDto(fileResult);
+      if (!fileResult.length) {
+        fileResult = [fileResult];
+      }
 
-      const result = [fileMsData];
+      const result = [];
+      for (let i = 0; i < fileResult.length; i++) {
+        const _file = fileResult[i];
+        result.push(_file);
+      }
+
       return {
         success,
         code,
