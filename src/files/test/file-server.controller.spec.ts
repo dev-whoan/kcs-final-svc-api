@@ -46,7 +46,9 @@ describe('FileServerController', () => {
 
       //* Call the function through the controller
       beforeEach(async () => {
-        data = await controller.getFileInfo(mockFileInfoMicroServiceDto.id);
+        data = (await controller.getFileInfo(
+          mockFileInfoMicroServiceDto.id,
+        )) as FileInfoReadOnly;
       });
 
       //* Controller may call the function through the service
