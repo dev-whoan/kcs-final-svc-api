@@ -2,15 +2,14 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { RedisManagerService } from '../redis-manager/redis-manager.service';
 import { UserCreateDto } from './data/dto/user-create.dto';
 import { UserRepository } from './data/user.repository';
-import { UserMicroserviceDto } from './data/dto/user.dto';
 import * as bcrypt from 'bcryptjs';
 import { MailService } from '../mail/mail.service';
+import { UserMicroserviceDto } from './data/dto/user.dto';
 
 @Injectable()
 export class UserService {
   private logger = new Logger('UserService');
   constructor(
-    private readonly redisService: RedisManagerService,
     private readonly userRepository: UserRepository,
     private readonly mailService: MailService,
   ) {}
@@ -66,7 +65,7 @@ export class UserService {
     const result = await this.userRepository.findByEmail(email);
     this.logger.log('getUserByEmail.result: ', result);
 
-    if (!result) return HttpStatus.INTERNAL_SERVER_ERROR;
+    if (!result) return HttpStatus.UNAUTHORIZED;
     // 따로 번호가 온 경우
     if (typeof result === 'number') return result;
 
@@ -109,6 +108,26 @@ export class UserService {
     if (!!result) return new UserMicroserviceDto(result);
 
     return HttpStatus.CONFLICT;
+  }
+
+  async deleteUser(
+    user: UserMicroserviceDto,
+  ): Promise<UserMicroserviceDto | number> {
+    const targetUser = await this.userRepository.findById(user.id);
+    this.logger.debug('deleteUser.targetUser:', targetUser);
+
+    if (!targetUser) return HttpStatus.NO_CONTENT;
+    if (typeof targetUser === 'number') return targetUser;
+
+    try {
+      return await this.userRepository.removeById(
+        targetUser.id,
+        targetUser.email,
+      );
+    } catch (e) {
+      this.logger.error(e.stack || e);
+      return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
   }
 
   async signUp() {}

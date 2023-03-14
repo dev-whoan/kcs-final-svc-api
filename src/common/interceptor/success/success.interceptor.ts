@@ -11,7 +11,9 @@ import { map, Observable } from 'rxjs';
 import { MicroserviceDataWrapper } from '../../data/microservice-data-wrapper';
 import { UserMicroserviceDto } from '../../../user/data/dto/user.dto';
 
-export function SuccessInterceptor(): Type<NestInterceptor> {
+export function SuccessInterceptor(
+  successCode: HttpStatus,
+): Type<NestInterceptor> {
   class MixinInterceptor implements NestInterceptor {
     async intercept(
       context: ExecutionContext,
@@ -33,9 +35,15 @@ export function SuccessInterceptor(): Type<NestInterceptor> {
 
     setDataAsMicroserviceDataWrapper(userResult): MicroserviceDataWrapper {
       const success = userResult !== null;
-      const code = success ? HttpStatus.CREATED : HttpStatus.NO_CONTENT;
+      const code = success ? successCode : HttpStatus.NO_CONTENT;
 
       if (typeof userResult === 'number') {
+        if (userResult >= 200 && userResult < 400) {
+          return {
+            success: true,
+            code: userResult,
+          };
+        }
         return {
           success: false,
           code: userResult,

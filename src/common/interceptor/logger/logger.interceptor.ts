@@ -21,7 +21,9 @@ export function MicroserviceDataLogger(
 
       return next
         .handle()
-        .pipe(tap((data) => this.logger.log(`Returning`, data)));
+        .pipe(
+          tap((data) => this.logger.log(`Returning`, JSON.stringify(data))),
+        );
     }
   }
   const Interceptor = mixin(LoggingInterceptor);

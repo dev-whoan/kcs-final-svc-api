@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { UserCreateDto } from './dto/user-create.dto';
 import { User } from './user.schema';
 import * as bcrypt from 'bcryptjs';
+import { UserMicroserviceDto } from './dto/user.dto';
 
 @Injectable()
 export class UserRepository {
@@ -39,6 +40,12 @@ export class UserRepository {
       result.nickname = user.nickname;
 
       const newUser = await result.save();
+
+      const iKey = `${this.redisPrefixKey}/${newUser.id}`;
+      const eKey = `${this.redisPrefixKey}/${newUser.email}`;
+      await this.redisService.deleteCache(iKey);
+      await this.redisService.deleteCache(eKey);
+
       return newUser.readOnlyData as User;
     } catch (e) {
       this.logger.error(e.stack || e);
@@ -50,7 +57,6 @@ export class UserRepository {
     try {
       //* First find on Redis
       //* If not exist on REdis, find on DB, and add it to Redis, and return it
-      console.log(id);
       const key = `${this.redisPrefixKey}/${id}`;
       const redisResult = await this.redisService.getCache(key);
 
@@ -84,7 +90,7 @@ export class UserRepository {
       //* First find on Redis
       //* If not exist on REdis, find on DB, and add it to Redis, and return it
       const key = `${this.redisPrefixKey}/${email}`;
-      /*
+
       const redisResult = await this.redisService.getCache(key);
 
       this.logger.log('findByEmail.redisResult:', !!redisResult);
@@ -93,7 +99,6 @@ export class UserRepository {
       if (!!redisResult) {
         return redisResult;
       }
-*/
       const dbResult = await this.userModel.findOne({
         email,
       });
@@ -107,6 +112,21 @@ export class UserRepository {
       }
 
       return null;
+    } catch (e) {
+      this.logger.error(e.stack || e);
+      return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+  }
+
+  async removeById(id: string, email: string): Promise<number> {
+    const iKey = `${this.redisPrefixKey}/${id}`;
+    const eKey = `${this.redisPrefixKey}/${email}`;
+    await this.redisService.deleteCache(iKey);
+    await this.redisService.deleteCache(eKey);
+
+    try {
+      await this.userModel.deleteOne({ id });
+      return HttpStatus.OK;
     } catch (e) {
       this.logger.error(e.stack || e);
       return HttpStatus.INTERNAL_SERVER_ERROR;
